@@ -16,7 +16,7 @@ func (con *Connection) AddCallback(eventCode string, callback func(*Event)) stri
 	})
 }
 
-func New(nickname, username string) *Connection {
+func NewConnection(nickname, username string) *Connection {
 	return &Connection{
 		irc.IRC(nickname, username),
 	}
