@@ -28,16 +28,12 @@ func (con *Connection) Channel() string {
 	return con.channel
 }
 
-func (con *Connection) RegisterChannel(channel string) string {
-	return con.Connection.AddCallback("001", func(e *irc.Event) {
-		con.channel = channel
-		con.Join(channel)
-	})
+func (con *Connection) RegisterChannel(channel string) {
+	con.channel = channel
 }
 
 func (con *Connection) Response(message string) {
 	con.Privmsg(con.Channel(), message)
-	return
 }
 
 func (con *Connection) AddCallback(eventCode string, callback callbackFunc) string {
@@ -51,16 +47,22 @@ func (con *Connection) AddCallback(eventCode string, callback callbackFunc) stri
 
 func (con *Connection) AddAction(command string, callback callbackFunc) {
 	con.actions[command] = callback
-	return
 }
 
 func (con *Connection) Loop() {
+	con.joinChannel()
 	con.registerActions()
 	con.Connection.Loop()
 }
 
-func (con *Connection) registerActions() {
-	con.AddCallback("PRIVMSG", func(e *Event) {
+func (con *Connection) joinChannel() string {
+	return con.Connection.AddCallback("001", func(e *irc.Event) {
+		con.Join(con.Channel())
+	})
+}
+
+func (con *Connection) registerActions() string {
+	return con.AddCallback("PRIVMSG", func(e *Event) {
 		// delete own name
 		message := regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
 
