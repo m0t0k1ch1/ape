@@ -1,6 +1,12 @@
 package ape
 
-import "testing"
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/thoj/go-ircevent"
+)
 
 func TestCommand(t *testing.T) {
 	name := "name"
@@ -18,5 +24,35 @@ func TestCommand(t *testing.T) {
 		if arg != args[i] {
 			t.Errorf("invalid arg - arg: \"%s\"", arg)
 		}
+	}
+}
+
+func TestEvent(t *testing.T) {
+	name := "name"
+	message1 := "message1"
+	message2 := "message2"
+
+	message := fmt.Sprintf("  %s %s  ", message1, message2)
+
+	e := newEvent(&irc.Event{
+		Arguments: []string{fmt.Sprintf("%s: %s", name, message)},
+	})
+	if e.Command() != nil {
+		t.Errorf("command is not nil - command: %v", e.Command())
+	}
+
+	if e.messageWithoutName() != strings.TrimSpace(message) {
+		t.Errorf("invalid message - message: \"%s\"", e.messageWithoutName())
+	}
+
+	e.buildCommand()
+	if e.Command() == nil {
+		t.Fatal("no command")
+	}
+	if e.Command().Name() != message1 {
+		t.Errorf("invalid command name - name: \"%s\"", e.Command().Name())
+	}
+	if e.Command().Args()[0] != message2 {
+		t.Errorf("invalid command arg - arg: \"%s\"", e.Command().Args()[0])
 	}
 }
