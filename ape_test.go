@@ -14,15 +14,21 @@ func TestCommand(t *testing.T) {
 	c := newCommand(name, args)
 
 	if c.Name() != name {
-		t.Errorf("invalid name - name: \"%s\"", c.Name())
+		t.Errorf(
+			"name is not \"%s\" - name : \"%s\"",
+			name, c.Name())
 	}
 
 	if len(c.Args()) != len(args) {
-		t.Errorf("invalid args length - length: %d", len(c.Args()))
+		t.Errorf(
+			"args length is not %d - length : %d",
+			len(args), len(c.Args()))
 	}
 	for i, arg := range c.Args() {
 		if arg != args[i] {
-			t.Errorf("invalid arg - arg: \"%s\"", arg)
+			t.Errorf(
+				"args[%d] is not \"%s\" - args[%d] : \"%s\"",
+				i, args[i], i, arg)
 		}
 	}
 }
@@ -38,21 +44,27 @@ func TestEvent(t *testing.T) {
 		Arguments: []string{fmt.Sprintf("%s: %s", name, message)},
 	})
 	if e.Command() != nil {
-		t.Errorf("command is not nil - command: %v", e.Command())
+		t.Errorf(
+			"command is not nil - command : %v",
+			e.Command())
 	}
 
 	if e.messageWithoutName() != strings.TrimSpace(message) {
-		t.Errorf("invalid message - message: \"%s\"", e.messageWithoutName())
+		t.Errorf(
+			"message is not \"%s\" - message : \"%s\"",
+			strings.TrimSpace(message), e.messageWithoutName())
 	}
 
 	e.buildCommand()
 	if e.Command() == nil {
-		t.Fatal("no command")
+		t.Fatal("command is nil")
 	}
 	if e.Command().Name() != message1 {
-		t.Errorf("invalid command name - name: \"%s\"", e.Command().Name())
+		t.Errorf("command name is not \"%s\" - command name : \"%s\"",
+			message1, e.Command().Name())
 	}
 	if e.Command().Args()[0] != message2 {
-		t.Errorf("invalid command arg - arg: \"%s\"", e.Command().Args()[0])
+		t.Errorf("command args[0] is not \"%s\" - command args[0] : \"%s\"",
+			message2, e.Command().Args()[0])
 	}
 }
