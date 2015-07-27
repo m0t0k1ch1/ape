@@ -39,7 +39,8 @@ func (e *Event) Command() *Command {
 }
 
 func (e *Event) messageWithoutName() string {
-	return regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
+	message := regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
+	return strings.TrimSpace(message)
 }
 
 func (e *Event) buildCommand() {
