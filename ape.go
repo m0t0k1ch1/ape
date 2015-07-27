@@ -9,13 +9,49 @@ import (
 
 type callbackFunc func(*Event)
 
-type Event struct {
-	*irc.Event
+type Command struct {
+	name string
 	args []string
 }
 
-func (e *Event) Args() []string {
-	return e.args
+func (c *Command) Name() string {
+	return c.name
+}
+
+func (c *Command) Args() []string {
+	return c.args
+}
+
+func newCommand(name string, args []string) *Command {
+	return &Command{
+		name: name,
+		args: args,
+	}
+}
+
+type Event struct {
+	*irc.Event
+	command *Command
+}
+
+func (e *Event) Command() *Command {
+	return e.command
+}
+
+func (e *Event) messageWithoutName() string {
+	return regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
+}
+
+func (e *Event) buildCommand() {
+	args := strings.Split(e.messageWithoutName(), " ")
+	e.command = newCommand(args[0], args[1:])
+}
+
+func newEvent(event *irc.Event) *Event {
+	return &Event{
+		Event:   event,
+		command: &Command{},
+	}
 }
 
 type Connection struct {
@@ -37,11 +73,8 @@ func (con *Connection) Response(message string) {
 }
 
 func (con *Connection) AddCallback(eventCode string, callback callbackFunc) string {
-	return con.Connection.AddCallback(eventCode, func(e *irc.Event) {
-		callback(&Event{
-			Event: e,
-			args:  []string{},
-		})
+	return con.Connection.AddCallback(eventCode, func(event *irc.Event) {
+		callback(newEvent(event))
 	})
 }
 
@@ -56,20 +89,16 @@ func (con *Connection) Loop() {
 }
 
 func (con *Connection) joinChannel() string {
-	return con.Connection.AddCallback("001", func(e *irc.Event) {
+	return con.Connection.AddCallback("001", func(event *irc.Event) {
 		con.Join(con.Channel())
 	})
 }
 
 func (con *Connection) registerActions() string {
 	return con.AddCallback("PRIVMSG", func(e *Event) {
-		// delete own name
-		message := regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
-
-		args := strings.Split(message, " ")
+		e.buildCommand()
 		for command, callback := range con.actions {
-			if args[0] == command {
-				e.args = args[1:]
+			if e.Command().Name() == command {
 				callback(e)
 			}
 		}
