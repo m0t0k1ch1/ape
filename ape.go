@@ -51,7 +51,7 @@ func (e *Event) buildCommand() {
 func newEvent(event *irc.Event) *Event {
 	return &Event{
 		Event:   event,
-		command: &Command{},
+		command: nil,
 	}
 }
 
