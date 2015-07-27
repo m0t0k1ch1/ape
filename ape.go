@@ -109,6 +109,7 @@ func (con *Connection) registerActions() string {
 func NewConnection(nickname, username string) *Connection {
 	return &Connection{
 		Connection: irc.IRC(nickname, username),
+		channel:    "",
 		actions:    map[string]callbackFunc{},
 	}
 }
