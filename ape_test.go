@@ -60,11 +60,13 @@ func TestEvent(t *testing.T) {
 		t.Fatal("command is nil")
 	}
 	if e.Command().Name() != message1 {
-		t.Errorf("command name is not \"%s\" - command name : \"%s\"",
+		t.Errorf(
+			"command name is not \"%s\" - command name : \"%s\"",
 			message1, e.Command().Name())
 	}
 	if e.Command().Args()[0] != message2 {
-		t.Errorf("command args[0] is not \"%s\" - command args[0] : \"%s\"",
+		t.Errorf(
+			"command args[0] is not \"%s\" - command args[0] : \"%s\"",
 			message2, e.Command().Args()[0])
 	}
 }
