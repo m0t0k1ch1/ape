@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/thoj/go-ircevent"
 )
@@ -111,5 +112,77 @@ func TestConnection(t *testing.T) {
 		t.Errorf(
 			"result is not \"done\" - result : \"%s\"",
 			result)
+	}
+}
+
+func TestAction(t *testing.T) {
+	server := "irc.freenode.net:6667"
+	channel := "#m0t0k1ch1-ape"
+
+	name1 := "ape1"
+	name2 := "ape2"
+
+	isReadyCon2 := false
+	count := 0
+	chanForCountUp := make(chan bool, 1)
+	chanForDone := make(chan bool, 1)
+
+	con1 := NewConnection(name1, name1)
+	con1.Debug = true
+	if err := con1.Connect(server); err != nil {
+		t.Fatal(err)
+	}
+	con1.RegisterChannel(channel)
+	con1.AddCallback("366", func(event *Event) {
+		ticker := time.NewTicker(1 * time.Second)
+		i := 5
+
+		for {
+			<-ticker.C
+			if isReadyCon2 {
+				con1.SendMessage(fmt.Sprintf("%s: count-up", name2))
+				i--
+			}
+			if i == 0 {
+				ticker.Stop()
+				con1.SendMessage(fmt.Sprintf("%s: quit", name2))
+				con1.Quit()
+			}
+		}
+	})
+
+	con2 := NewConnection(name2, name2)
+	con2.Debug = true
+	if err := con2.Connect(server); err != nil {
+		t.Fatal(err)
+	}
+	con2.RegisterChannel(channel)
+	con1.AddCallback("366", func(event *Event) {
+		isReadyCon2 = true
+	})
+	con2.AddAction("count-up", func(e *Event) {
+		chanForCountUp <- true
+	})
+	con2.AddAction("quit", func(e *Event) {
+		con2.Quit()
+		chanForDone <- true
+	})
+
+	go con1.Loop()
+	go con2.Loop()
+
+	func() {
+		for {
+			select {
+			case <-chanForCountUp:
+				count++
+			case <-chanForDone:
+				return
+			}
+		}
+	}()
+
+	if count != 5 {
+		t.Errorf("count is not 5 - count : %d", count)
 	}
 }
