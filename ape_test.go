@@ -70,3 +70,46 @@ func TestEvent(t *testing.T) {
 			message2, e.Command().Args()[0])
 	}
 }
+
+func TestConnection(t *testing.T) {
+	done := make(chan string, 1)
+
+	channel := "#channel"
+	command := "command"
+	callback := func(e *Event) {
+		t.Log("callback is invoked")
+		done <- "done"
+	}
+
+	con := NewConnection("nickname", "username")
+	if con.Channel() != "" {
+		t.Errorf(
+			"channel is not \"\" - channel : \"%s\"",
+			con.Channel())
+	}
+	if len(con.actions) > 0 {
+		t.Errorf(
+			"actions length is over 0 - actions length : %d",
+			len(con.actions))
+	}
+
+	con.RegisterChannel(channel)
+	if con.Channel() != channel {
+		t.Errorf(
+			"channel is not \"%s\" - channel : \"%s\"",
+			channel, con.Channel())
+	}
+
+	con.AddAction(command, callback)
+	if len(con.actions) != 1 {
+		t.Errorf(
+			"actions length is not 1 - actions length : %d",
+			len(con.actions))
+	}
+	con.actions[command](&Event{})
+	if result := <-done; result != "done" {
+		t.Errorf(
+			"result is not \"done\" - result : \"%s\"",
+			result)
+	}
+}
