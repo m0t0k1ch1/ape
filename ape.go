@@ -69,7 +69,7 @@ func (con *Connection) RegisterChannel(channel string) {
 	con.channel = channel
 }
 
-func (con *Connection) Response(message string) {
+func (con *Connection) SendMessage(message string) {
 	con.Privmsg(con.Channel(), message)
 }
 

@@ -25,18 +25,18 @@ func main() {
 	con.RegisterChannel("#poyo")
 
 	con.AddAction("piyo", func(e *ape.Event) {
-		con.Response("poyo")
+		con.SendMessage("poyo")
 	})
 
 	con.AddAction("say", func(e *ape.Event) {
-		con.Response(strings.Join(e.Command().Args(), " "))
+		con.SendMessage(strings.Join(e.Command().Args(), " "))
 	})
 
 	con.AddAction("🙏", func(e *ape.Event) {
-		con.Response("解脱")
+		con.SendMessage("解脱")
 		con.Part(con.Channel())
 		con.Join(con.Channel())
-		con.Response("輪廻転生")
+		con.SendMessage("輪廻転生")
 	})
 
 	con.Loop()
