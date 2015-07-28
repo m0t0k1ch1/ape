@@ -57,8 +57,9 @@ func newEvent(event *irc.Event) *Event {
 
 type Connection struct {
 	*irc.Connection
-	channel string
-	actions map[string]callbackFunc
+	channel     string
+	actions     map[string]callbackFunc
+	initActions []callbackFunc
 }
 
 func (con *Connection) Channel() string {
@@ -79,19 +80,27 @@ func (con *Connection) AddCallback(eventCode string, callback callbackFunc) stri
 	})
 }
 
+func (con *Connection) AddInitAction(callback callbackFunc) {
+	con.initActions = append(con.initActions, callback)
+}
+
 func (con *Connection) AddAction(command string, callback callbackFunc) {
 	con.actions[command] = callback
 }
 
 func (con *Connection) Loop() {
-	con.joinChannel()
+	con.registerInitActions()
 	con.registerActions()
 	con.Connection.Loop()
 }
 
-func (con *Connection) joinChannel() string {
-	return con.Connection.AddCallback("001", func(event *irc.Event) {
+func (con *Connection) registerInitActions() string {
+	return con.AddCallback("001", func(e *Event) {
 		con.Join(con.Channel())
+
+		for _, callback := range con.initActions {
+			callback(e)
+		}
 	})
 }
 
@@ -108,8 +117,9 @@ func (con *Connection) registerActions() string {
 
 func NewConnection(nickname, username string) *Connection {
 	return &Connection{
-		Connection: irc.IRC(nickname, username),
-		channel:    "",
-		actions:    map[string]callbackFunc{},
+		Connection:  irc.IRC(nickname, username),
+		channel:     "",
+		initActions: []callbackFunc{},
+		actions:     map[string]callbackFunc{},
 	}
 }
