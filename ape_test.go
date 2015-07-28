@@ -78,12 +78,12 @@ func TestConnection(t *testing.T) {
 
 	chanForDone := make(chan string, 1)
 	callback1 := func(e *Event) {
-		t.Log("callback1 is invoked")
 		chanForDone <- "callback1"
+		t.Log("callback1 is invoked")
 	}
 	callback2 := func(e *Event) {
-		t.Log("callback2 is invoked")
 		chanForDone <- "callback2"
+		t.Log("callback2 is invoked")
 	}
 
 	con := NewConnection("nickname", "username")
