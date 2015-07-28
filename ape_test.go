@@ -73,13 +73,17 @@ func TestEvent(t *testing.T) {
 }
 
 func TestConnection(t *testing.T) {
-	done := make(chan string, 1)
-
 	channel := "#channel"
 	command := "command"
-	callback := func(e *Event) {
-		t.Log("callback is invoked")
-		done <- "done"
+
+	chanForDone := make(chan string, 1)
+	callback1 := func(e *Event) {
+		t.Log("callback1 is invoked")
+		chanForDone <- "callback1"
+	}
+	callback2 := func(e *Event) {
+		t.Log("callback2 is invoked")
+		chanForDone <- "callback2"
 	}
 
 	con := NewConnection("nickname", "username")
@@ -87,6 +91,11 @@ func TestConnection(t *testing.T) {
 		t.Errorf(
 			"channel is not \"\" - channel : \"%s\"",
 			con.Channel())
+	}
+	if len(con.initActions) > 0 {
+		t.Errorf(
+			"initActions length is over 0 - initActions length : %d",
+			len(con.initActions))
 	}
 	if len(con.actions) > 0 {
 		t.Errorf(
@@ -101,16 +110,29 @@ func TestConnection(t *testing.T) {
 			channel, con.Channel())
 	}
 
-	con.AddAction(command, callback)
+	con.AddInitAction(callback1)
+	if len(con.initActions) != 1 {
+		t.Errorf(
+			"initActions length is not 1 - initActions length : %d",
+			len(con.initActions))
+	}
+	con.initActions[0](&Event{})
+	if result := <-chanForDone; result != "callback1" {
+		t.Errorf(
+			"result is not \"callback1\" - result : \"%s\"",
+			result)
+	}
+
+	con.AddAction(command, callback2)
 	if len(con.actions) != 1 {
 		t.Errorf(
 			"actions length is not 1 - actions length : %d",
 			len(con.actions))
 	}
 	con.actions[command](&Event{})
-	if result := <-done; result != "done" {
+	if result := <-chanForDone; result != "callback2" {
 		t.Errorf(
-			"result is not \"done\" - result : \"%s\"",
+			"result is not \"callback2\" - result : \"%s\"",
 			result)
 	}
 }
@@ -124,11 +146,11 @@ func TestAction(t *testing.T) {
 
 	isReadyCon2 := false
 	count := 0
+	chanForInit := make(chan bool, 1)
 	chanForCountUp := make(chan bool, 1)
 	chanForDone := make(chan bool, 1)
 
 	con1 := NewConnection(name1, name1)
-	con1.Debug = true
 	if err := con1.Connect(server); err != nil {
 		t.Fatal(err)
 	}
@@ -142,30 +164,34 @@ func TestAction(t *testing.T) {
 			if isReadyCon2 {
 				con1.SendMessage(fmt.Sprintf("%s: count-up", name2))
 				i--
+				t.Log("con1 - send message to con2")
 			}
 			if i == 0 {
 				ticker.Stop()
 				con1.SendMessage(fmt.Sprintf("%s: quit", name2))
 				con1.Quit()
+				t.Log("con1 - quit")
 			}
 		}
 	})
 
 	con2 := NewConnection(name2, name2)
-	con2.Debug = true
 	if err := con2.Connect(server); err != nil {
 		t.Fatal(err)
 	}
 	con2.RegisterChannel(channel)
-	con1.AddCallback("366", func(event *Event) {
-		isReadyCon2 = true
+	con2.AddInitAction(func(event *Event) {
+		chanForInit <- true
+		t.Log("con2 - init")
 	})
 	con2.AddAction("count-up", func(e *Event) {
 		chanForCountUp <- true
+		t.Log("con2 - count up")
 	})
 	con2.AddAction("quit", func(e *Event) {
 		con2.Quit()
 		chanForDone <- true
+		t.Log("con2 - quit")
 	})
 
 	go con1.Loop()
@@ -174,6 +200,8 @@ func TestAction(t *testing.T) {
 	func() {
 		for {
 			select {
+			case <-chanForInit:
+				isReadyCon2 = true
 			case <-chanForCountUp:
 				count++
 			case <-chanForDone:
