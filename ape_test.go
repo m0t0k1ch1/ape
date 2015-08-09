@@ -85,6 +85,10 @@ func TestConnection(t *testing.T) {
 		chanForDone <- "callback2"
 		t.Log("callback2 is invoked")
 	}
+	callback3 := func(e *Event) {
+		chanForDone <- "callback3"
+		t.Log("callback3 is invoked")
+	}
 
 	con := NewConnection("nickname", "username")
 	if con.Channel() != "" {
@@ -96,6 +100,11 @@ func TestConnection(t *testing.T) {
 		t.Errorf(
 			"initActions length is over 0 - initActions length : %d",
 			len(con.initActions))
+	}
+	if con.defaultAction != nil {
+		t.Errorf(
+			"defaultAction is not nil - defaultAction : %v",
+			con.defaultAction)
 	}
 	if len(con.actions) > 0 {
 		t.Errorf(
@@ -123,16 +132,27 @@ func TestConnection(t *testing.T) {
 			result)
 	}
 
-	con.AddAction(command, callback2)
+	con.AddDefaultAction(callback2)
+	if con.defaultAction == nil {
+		t.Errorf("defaultAction is nil")
+	}
+	con.defaultAction(&Event{})
+	if result := <-chanForDone; result != "callback2" {
+		t.Errorf(
+			"result is not \"callback2\" - result : \"%s\"",
+			result)
+	}
+
+	con.AddAction(command, callback3)
 	if len(con.actions) != 1 {
 		t.Errorf(
 			"actions length is not 1 - actions length : %d",
 			len(con.actions))
 	}
 	con.actions[command](&Event{})
-	if result := <-chanForDone; result != "callback2" {
+	if result := <-chanForDone; result != "callback3" {
 		t.Errorf(
-			"result is not \"callback2\" - result : \"%s\"",
+			"result is not \"callback3\" - result : \"%s\"",
 			result)
 	}
 }
@@ -147,6 +167,7 @@ func TestAction(t *testing.T) {
 	isReadyCon2 := false
 	count := 0
 	chanForInit := make(chan bool, 1)
+	chanForDefaultAction := make(chan bool, 1)
 	chanForCountUp := make(chan bool, 1)
 	chanForDone := make(chan bool, 1)
 
@@ -168,6 +189,7 @@ func TestAction(t *testing.T) {
 			}
 			if i == 0 {
 				ticker.Stop()
+				con1.SendMessage(fmt.Sprintf("%s: poyo", name2))
 				con1.SendMessage(fmt.Sprintf("%s: quit", name2))
 				con1.Quit()
 				t.Log("con1 - quit")
@@ -183,6 +205,10 @@ func TestAction(t *testing.T) {
 	con2.AddInitAction(func(event *Event) {
 		chanForInit <- true
 		t.Log("con2 - init")
+	})
+	con2.AddDefaultAction(func(event *Event) {
+		chanForDefaultAction <- true
+		t.Log("con2 - default action")
 	})
 	con2.AddAction("count-up", func(e *Event) {
 		chanForCountUp <- true

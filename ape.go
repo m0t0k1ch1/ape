@@ -57,9 +57,10 @@ func newEvent(event *irc.Event) *Event {
 
 type Connection struct {
 	*irc.Connection
-	channel     string
-	actions     map[string]callbackFunc
-	initActions []callbackFunc
+	channel       string
+	initActions   []callbackFunc
+	defaultAction callbackFunc
+	actions       map[string]callbackFunc
 }
 
 func (con *Connection) Channel() string {
@@ -82,6 +83,10 @@ func (con *Connection) AddCallback(eventCode string, callback callbackFunc) stri
 
 func (con *Connection) AddInitAction(callback callbackFunc) {
 	con.initActions = append(con.initActions, callback)
+}
+
+func (con *Connection) AddDefaultAction(callback callbackFunc) {
+	con.defaultAction = callback
 }
 
 func (con *Connection) AddAction(command string, callback callbackFunc) {
@@ -110,16 +115,21 @@ func (con *Connection) registerActions() string {
 		for command, callback := range con.actions {
 			if e.Command().Name() == command {
 				callback(e)
+				return
 			}
+		}
+		if con.defaultAction != nil {
+			con.defaultAction(e)
 		}
 	})
 }
 
 func NewConnection(nickname, username string) *Connection {
 	return &Connection{
-		Connection:  irc.IRC(nickname, username),
-		channel:     "",
-		initActions: []callbackFunc{},
-		actions:     map[string]callbackFunc{},
+		Connection:    irc.IRC(nickname, username),
+		channel:       "",
+		initActions:   []callbackFunc{},
+		defaultAction: nil,
+		actions:       map[string]callbackFunc{},
 	}
 }
