@@ -28,10 +28,6 @@ func main() {
 		con.SendMessage("poyo")
 	})
 
-	con.AddDefaultAction(func(e *ape.Event) {
-		con.SendMessage("unknown action")
-	})
-
 	con.AddAction("say", func(e *ape.Event) {
 		con.SendMessage(strings.Join(e.Command().Args(), " "))
 	})
