@@ -165,7 +165,9 @@ func TestAction(t *testing.T) {
 	name2 := "ape2"
 
 	isReadyCon2 := false
+	isInvokeDefaultAction := false
 	count := 0
+
 	chanForInit := make(chan bool, 1)
 	chanForDefaultAction := make(chan bool, 1)
 	chanForCountUp := make(chan bool, 1)
@@ -228,6 +230,8 @@ func TestAction(t *testing.T) {
 			select {
 			case <-chanForInit:
 				isReadyCon2 = true
+			case <-chanForDefaultAction:
+				isInvokeDefaultAction = true
 			case <-chanForCountUp:
 				count++
 			case <-chanForDone:
@@ -236,6 +240,9 @@ func TestAction(t *testing.T) {
 		}
 	}()
 
+	if !isInvokeDefaultAction {
+		t.Errorf("default action is not invoked")
+	}
 	if count != 5 {
 		t.Errorf("count is not 5 - count : %d", count)
 	}
