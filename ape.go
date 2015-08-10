@@ -1,6 +1,7 @@
 package ape
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -38,8 +39,18 @@ func (e *Event) Command() *Command {
 	return e.command
 }
 
+func (e *Event) targetName() string {
+	pattern := `^([^:]+): `
+	matches := regexp.MustCompile(pattern).FindStringSubmatch(e.Message())
+	if len(matches) > 1 {
+		return matches[1]
+	}
+	return ""
+}
+
 func (e *Event) messageWithoutName() string {
-	message := regexp.MustCompile(`^(.+: )`).ReplaceAllString(e.Message(), "")
+	pattern := fmt.Sprintf(`^(%s: )`, e.targetName())
+	message := regexp.MustCompile(pattern).ReplaceAllString(e.Message(), "")
 	return strings.TrimSpace(message)
 }
 
@@ -111,6 +122,9 @@ func (con *Connection) registerInitActions() string {
 
 func (con *Connection) registerActions() string {
 	return con.AddCallback("PRIVMSG", func(e *Event) {
+		if e.targetName() != con.GetNick() {
+			return
+		}
 		e.buildCommand()
 		for command, callback := range con.actions {
 			if e.Command().Name() == command {

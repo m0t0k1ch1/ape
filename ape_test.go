@@ -50,6 +50,12 @@ func TestEvent(t *testing.T) {
 			e.Command())
 	}
 
+	if e.targetName() != name {
+		t.Errorf(
+			"target name is not \"%s\" - target name : \"%s\"",
+			name, e.targetName())
+	}
+
 	if e.messageWithoutName() != strings.TrimSpace(message) {
 		t.Errorf(
 			"message is not \"%s\" - message : \"%s\"",
