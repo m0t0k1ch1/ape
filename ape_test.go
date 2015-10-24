@@ -186,18 +186,21 @@ func TestAction(t *testing.T) {
 	con1.RegisterChannel(channel)
 	con1.AddCallback("366", func(event *Event) {
 		ticker := time.NewTicker(1 * time.Second)
-		i := 5
+		i := 6
 
 		for {
 			<-ticker.C
 			if isReadyCon2 {
-				con1.SendMessage(fmt.Sprintf("%s: count-up", name2))
+				if i == 6 {
+					con1.SendMessage(fmt.Sprintf("%s: unknown", name2))
+				} else {
+					con1.SendMessage(fmt.Sprintf("%s: count-up", name2))
+				}
 				i--
 				t.Log("con1 - send message to con2")
 			}
 			if i == 0 {
 				ticker.Stop()
-				con1.SendMessage(fmt.Sprintf("%s: poyo", name2))
 				con1.SendMessage(fmt.Sprintf("%s: quit", name2))
 				con1.Quit()
 				t.Log("con1 - quit")
