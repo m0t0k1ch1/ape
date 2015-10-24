@@ -1,5 +1,7 @@
 # ape
 
+[![wercker status](https://app.wercker.com/status/4de970b70eff735cd6cdd0a1c51d10e1/m "wercker status")](https://app.wercker.com/project/bykey/4de970b70eff735cd6cdd0a1c51d10e1)
+
 IRC reaction bot framework based on [thoj/go-ircevent](https://github.com/thoj/go-ircevent)
 
 ## Example
