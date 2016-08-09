@@ -86,7 +86,7 @@ func (con *Connection) SendMessage(message string) {
 	con.Privmsg(con.Channel(), message)
 }
 
-func (con *Connection) AddCallback(eventCode string, callback callbackFunc) string {
+func (con *Connection) AddCallback(eventCode string, callback callbackFunc) int {
 	return con.Connection.AddCallback(eventCode, func(event *irc.Event) {
 		callback(newEvent(event))
 	})
@@ -110,7 +110,7 @@ func (con *Connection) Loop() {
 	con.Connection.Loop()
 }
 
-func (con *Connection) registerInitActions() string {
+func (con *Connection) registerInitActions() int {
 	return con.AddCallback("001", func(e *Event) {
 		con.Join(con.Channel())
 
@@ -120,7 +120,7 @@ func (con *Connection) registerInitActions() string {
 	})
 }
 
-func (con *Connection) registerActions() string {
+func (con *Connection) registerActions() int {
 	return con.AddCallback("PRIVMSG", func(e *Event) {
 		if e.targetName() != con.GetNick() {
 			return
