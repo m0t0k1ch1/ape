@@ -2,14 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/thoj/go-ircevent"
   packages = ["."]
-  revision = "a6b1561a016c2a4aae183c3ef152c25d134c095d"
-  version = "0.1"
+  revision = "db5bd176f7c6f4b2f15c46142fdc8319a365bf6e"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "60d6a8b6b4fc623ae911c392a4211bd2a28f51e1b0841fa0a391d302f990b3fb"
+  inputs-digest = "2abbc50e5d1473cafe81eed3582f91955d0151bffaa96c51111ba5b4ff044778"
   solver-name = "gps-cdcl"
   solver-version = 1
