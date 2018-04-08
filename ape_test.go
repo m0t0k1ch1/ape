@@ -16,7 +16,7 @@ func TestCommand(t *testing.T) {
 
 	if c.Name() != name {
 		t.Errorf(
-			"name is not \"%s\" - name : \"%s\"",
+			"name is not %q - name : %q",
 			name, c.Name())
 	}
 
@@ -28,7 +28,7 @@ func TestCommand(t *testing.T) {
 	for i, arg := range c.Args() {
 		if arg != args[i] {
 			t.Errorf(
-				"args[%d] is not \"%s\" - args[%d] : \"%s\"",
+				"args[%d] is not %q - args[%d] : %q",
 				i, args[i], i, arg)
 		}
 	}
@@ -52,13 +52,13 @@ func TestEvent(t *testing.T) {
 
 	if e.targetName() != name {
 		t.Errorf(
-			"target name is not \"%s\" - target name : \"%s\"",
+			"target name is not %q - target name : %q",
 			name, e.targetName())
 	}
 
 	if e.messageWithoutName() != strings.TrimSpace(message) {
 		t.Errorf(
-			"message is not \"%s\" - message : \"%s\"",
+			"message is not %q - message : %q",
 			strings.TrimSpace(message), e.messageWithoutName())
 	}
 
@@ -68,12 +68,12 @@ func TestEvent(t *testing.T) {
 	}
 	if e.Command().Name() != message1 {
 		t.Errorf(
-			"command name is not \"%s\" - command name : \"%s\"",
+			"command name is not %q - command name : %q",
 			message1, e.Command().Name())
 	}
 	if e.Command().Args()[0] != message2 {
 		t.Errorf(
-			"command args[0] is not \"%s\" - command args[0] : \"%s\"",
+			"command args[0] is not %q - command args[0] : %q",
 			message2, e.Command().Args()[0])
 	}
 }
@@ -99,8 +99,8 @@ func TestConnection(t *testing.T) {
 	con := NewConnection("nickname", "username")
 	if con.Channel() != "" {
 		t.Errorf(
-			"channel is not \"\" - channel : \"%s\"",
-			con.Channel())
+			"channel is not %q - channel : %q",
+			"", con.Channel())
 	}
 	if len(con.initActions) > 0 {
 		t.Errorf(
@@ -121,7 +121,7 @@ func TestConnection(t *testing.T) {
 	con.RegisterChannel(channel)
 	if con.Channel() != channel {
 		t.Errorf(
-			"channel is not \"%s\" - channel : \"%s\"",
+			"channel is not %q - channel : %q",
 			channel, con.Channel())
 	}
 
@@ -134,8 +134,8 @@ func TestConnection(t *testing.T) {
 	con.initActions[0](&Event{})
 	if result := <-chanForDone; result != "callback1" {
 		t.Errorf(
-			"result is not \"callback1\" - result : \"%s\"",
-			result)
+			"result is not %q - result : %q",
+			"callback1", result)
 	}
 
 	con.AddDefaultAction(callback2)
@@ -145,8 +145,8 @@ func TestConnection(t *testing.T) {
 	con.defaultAction(&Event{})
 	if result := <-chanForDone; result != "callback2" {
 		t.Errorf(
-			"result is not \"callback2\" - result : \"%s\"",
-			result)
+			"result is not %q - result : %q",
+			"callback2", result)
 	}
 
 	con.AddAction(command, callback3)
@@ -158,8 +158,8 @@ func TestConnection(t *testing.T) {
 	con.actions[command](&Event{})
 	if result := <-chanForDone; result != "callback3" {
 		t.Errorf(
-			"result is not \"callback3\" - result : \"%s\"",
-			result)
+			"result is not %q - result : %q",
+			"callback3", result)
 	}
 }
 
