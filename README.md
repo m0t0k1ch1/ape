@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/m0t0k1ch1/ape?status.svg)](https://godoc.org/github.com/m0t0k1ch1/ape) [![wercker status](https://app.wercker.com/status/4de970b70eff735cd6cdd0a1c51d10e1/s/master "wercker status")](https://app.wercker.com/project/bykey/4de970b70eff735cd6cdd0a1c51d10e1)
 
-IRC reaction bot framework based on [thoj/go-ircevent](https://github.com/thoj/go-ircevent)
+an IRC reaction bot framework based on [thoj/go-ircevent](https://github.com/thoj/go-ircevent)
 
 ## Example
 
